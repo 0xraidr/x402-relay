@@ -13,26 +13,3 @@ cd relay/x402-facilitator && npx tsx src/index.ts
 cd relay/x402-server && npx tsx src/index.ts
 cd relay/x402-client && npx tsx src/index.ts
 ```
-
-## Keypairs (devnet)
-
-Do not commit `*-wallet.json`. Copy `x402-client/.env.example` and `x402-facilitator/.env.example` to `.env` and set `RELAY_*_KEYPAIR_PATH` (or the `*_SECRET_KEY` array). Keep key files only on your machine.
-
-The native examples under `example/x402-solana-examples` use their own `client.json` / wallets — treat those the same way.
-
-### If keys were ever committed to Git
-
-Old commits may still contain leaked files until history is rewritten. After committing these `.gitignore` and `.env` changes, run from the repository root (adjust paths if your filenames differ):
-
-```bash
-git filter-repo \
-  --path relay/x402-client/payer-wallet.json \
-  --path relay/x402-facilitator/facilitator-wallet.json \
-  --path example/payer-wallet.json \
-  --invert-paths
-```
-
-`git filter-repo` removes the `origin` remote. Add it back, then force-push:  
-`git remote add origin <your-url>` and `git push --force-with-lease origin main`
-
-**Anyone** who cloned the old repo should re-clone or hard-reset. Rotating devnet keys is still recommended if the repo was public.
