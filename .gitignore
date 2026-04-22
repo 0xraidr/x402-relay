@@ -1,0 +1,22 @@
+# Secrets — never commit key material
+.env
+.env.*.local
+*.pem
+
+# Local Solana keypair files (use .env to point to paths)
+**/*-wallet.json
+**/payer-wallet.json
+**/facilitator-wallet.json
+**/*-keypair.json
+**/keypair.json
+# Example keypair files (generate locally; do not commit)
+example/x402-solana-examples/**/client.json
+
+# Dependencies & build
+node_modules/
+dist/
+*.tsbuildinfo
+
+# OS / editor
+.DS_Store
+*.log

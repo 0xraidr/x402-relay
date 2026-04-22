@@ -1,5 +1,7 @@
 # x402 on Solana — Technical Analysis
 
+**Repository layout:** runnable apps for this workspace live under `relay/` (`relay/x402-server`, `relay/x402-facilitator`, `relay/x402-client`). The reference code in `example/x402-solana-examples` is the upstream-style examples.
+
 ## 1. Protocol Overview
 
 x402 is an open payment protocol that realizes the HTTP 402 "Payment Required" status code. Incubated by the Coinbase Development Platform, it enables any web service to charge for API/content access via pay-per-use micropayments — no accounts, no subscriptions, no OAuth. On Solana, x402 leverages sub-cent transaction costs and ~400ms finality to make true machine-to-machine commerce viable at scale.

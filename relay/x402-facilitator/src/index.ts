@@ -1,33 +1,42 @@
-import { Hono } from "hono";                                                
-import {                                                                    
-    Connection,                                                               
-    Transaction,                                                              
-    PublicKey,                                                                
-    Keypair,                                                                  
-} from "@solana/web3.js";                                                   
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";                       
-import fs from "fs";  
-// For Node.js - need this to actually serve                                
-import { serve } from "@hono/node-server";                                                        
-                                                                               
-   const app = new Hono();                                                     
-   const connection = new Connection("https://api.devnet.solana.com",          
- "confirmed");                                                                 
-                                                                               
-   // Your facilitator wallet — fund this with devnet SOL                      
-   // solana-keygen new --outfile ./facilitator-wallet.json                    
-   // solana airdrop 2 <PUBKEY> --url devnet                                   
-   const keypairData = JSON.parse(                                             
-     fs.readFileSync("./facilitator-wallet.json", "utf-8")                     
-   );                                                                          
-   const feePayer = Keypair.fromSecretKey(Uint8Array.from(keypairData));       
-                                                                               
-   const USDC_MINT = new PublicKey(                                            
-     "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"                            
-   );                                                                          
-                                                                               
-   // ─── GET /supported ─────────────────────────────────────────────         
-   app.get("/supported", (c) => {                                              
+import "dotenv/config";
+import fs from "fs";
+import path from "path";
+import { Hono } from "hono";
+import {
+  Connection,
+  Transaction,
+  PublicKey,
+  Keypair,
+} from "@solana/web3.js";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { serve } from "@hono/node-server";
+
+function loadFacilitatorKeypair(): Keypair {
+  const inline = process.env.RELAY_FACILITATOR_SECRET_KEY;
+  if (inline) {
+    return Keypair.fromSecretKey(
+      Uint8Array.from(JSON.parse(inline) as number[])
+    );
+  }
+  const rel =
+    process.env.RELAY_FACILITATOR_KEYPAIR_PATH ?? "./facilitator-wallet.json";
+  const abs = path.isAbsolute(rel) ? rel : path.join(process.cwd(), rel);
+  const raw = fs.readFileSync(abs, "utf-8");
+  return Keypair.fromSecretKey(Uint8Array.from(JSON.parse(raw) as number[]));
+}
+
+const app = new Hono();
+const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+
+// Fund this wallet on devnet (see .env.example for keypair env vars)
+const feePayer = loadFacilitatorKeypair();
+
+const USDC_MINT = new PublicKey(
+  "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
+);
+
+// ─── GET /supported ─────────────────────────────────────────────
+app.get("/supported", (c) => {                                              
      return c.json({                                                           
        x402Version: 1,                                                         
        schemes: ["exact"],                                                     

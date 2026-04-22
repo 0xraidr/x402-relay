@@ -1,17 +1,35 @@
-import {                                                                                                   
-    Connection,                                                                                              
-    Keypair,                                                                                                 
-    PublicKey,                                                                                               
-    Transaction,                                                                                             
-  } from "@solana/web3.js";                                                                                  
-  import {                                                                                                   
-    getAssociatedTokenAddress,                                                                               
-    createTransferInstruction,                                                                               
-    getOrCreateAssociatedTokenAccount,
-    createAssociatedTokenAccountInstruction,
-    getAccount,                                                                       
-  } from "@solana/spl-token";                                                                                
-  import fs from "fs";    
+import "dotenv/config";
+import fs from "fs";
+import path from "path";
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
+import {
+  getAssociatedTokenAddress,
+  createTransferInstruction,
+  getOrCreateAssociatedTokenAccount,
+  createAssociatedTokenAccountInstruction,
+  getAccount,
+} from "@solana/spl-token";
+
+function loadPayerKeypair(): Keypair {
+  const inline = process.env.RELAY_PAYER_SECRET_KEY;
+  if (inline) {
+    return Keypair.fromSecretKey(
+      Uint8Array.from(JSON.parse(inline) as number[])
+    );
+  }
+  const rel =
+    process.env.RELAY_PAYER_KEYPAIR_PATH ?? "./payer-wallet.json";
+  const abs = path.isAbsolute(rel) ? rel : path.join(process.cwd(), rel);
+  const raw = fs.readFileSync(abs, "utf-8");
+  return Keypair.fromSecretKey(
+    Uint8Array.from(JSON.parse(raw) as number[])
+  );
+}
   
   /** Body of HTTP 402 from x402-server (matches `accepts` in the 402 JSON). */
 type PaymentRequirements402 = {
@@ -33,9 +51,8 @@ type PaymentRequirements402 = {
   const connection = new Connection("https://api.devnet.solana.com", "confirmed");                           
   const USDC_MINT = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");                        
                                                                                                              
-  // Load your payer wallet (the one you funded with devnet SOL + USDC)                                      
-  const keypairData = JSON.parse(fs.readFileSync("./payer-wallet.json", "utf-8"));                           
-  const payer = Keypair.fromSecretKey(Uint8Array.from(keypairData));                                         
+  // Payer key: RELAY_PAYER_SECRET_KEY or RELAY_PAYER_KEYPAIR_PATH (see .env.example)
+  const payer = loadPayerKeypair();
                                                                                                              
   async function main() {                                                                                    
     // ── Step 1: Hit the paid endpoint with no payment ──────────                                           
