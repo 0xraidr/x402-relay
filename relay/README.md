@@ -32,4 +32,7 @@ git filter-repo \
   --invert-paths
 ```
 
-Then force-push any remote: `git push --force-with-lease origin <branch>`. **Anyone** who cloned the old repo should re-clone or reset hard. Rotating devnet keys is still recommended if the repo was public.
+`git filter-repo` removes the `origin` remote. Add it back, then force-push:  
+`git remote add origin <your-url>` and `git push --force-with-lease origin main`
+
+**Anyone** who cloned the old repo should re-clone or hard-reset. Rotating devnet keys is still recommended if the repo was public.
